@@ -1,9 +1,14 @@
-output "recovery_services_vault_id" {
-  value       = azurerm_recovery_services_vault.backup.id
-  description = "Resource ID of the Recovery Services Vault"
+output "virtual_network_id" {
+  value       = azurerm_virtual_network.network.id
+  description = "Resource ID of the Virtual Network"
 }
 
-output "vm_backup_policy_id" {
-  value       = azurerm_backup_policy_vm.backup.id
-  description = "Resource ID of the VM backup policy"
+output "virtual_network_address_space" {
+  value       = azurerm_virtual_network.network.address_space
+  description = "Address space of the Virtual Network"
+}
+
+output "subnets" {
+  value       = azurerm_subnet.subnets
+  description = "The subnets deployed to the Virtual Network"
 }

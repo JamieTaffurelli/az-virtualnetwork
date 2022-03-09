@@ -1,38 +1,37 @@
-terraform {
-  required_providers {
-    azurerm = {
-      source  = "hashicorp/azurerm"
-      version = "~> 2.95"
-    }
-  }
-
-  required_version = "~> 1.1.5"
-}
-
 data "azurerm_log_analytics_workspace" "logs" {
   name                = var.log_analytics_workspace_name
   resource_group_name = var.log_analytics_workspace_resource_group_name
 }
 
+data "azurerm_network_security_group" "nsg" {
+  for_each            = var.subnets
+  name                = each.nsg_name
+  resource_group_name = each.nsg_resource_group_name
+}
+
 resource "azurerm_virtual_network" "network" {
   name                = var.virtual_network_name
-  resource_group_name = azurerm_resource_group.network.name
-  location            = azurerm_resource_group.network.location
+  resource_group_name = var.resource_group_name
+  location            = var.location
   address_space       = var.virtual_network_address_space
   tags                = var.tags
 }
 
-resource "azurerm_subnet" "sql" {
-  name                 = "sql"
-  resource_group_name  = azurerm_resource_group.network.name
-  virtual_network_name = azurerm_virtual_network.network.name
-  address_prefixes     = ["10.0.0.0/24"]
-  service_endpoints = ["Microsoft.Storage"]
+resource "azurerm_subnet" "subnets" {
+  for_each                                       = var.subnets
+  name                                           = each.name
+  resource_group_name                            = var.resource_group_name
+  virtual_network_name                           = azurerm_virtual_network.network.name
+  address_prefixes                               = each.address_prefixes
+  service_endpoints                              = each.service_endpoints
+  enforce_private_link_endpoint_network_policies = true
+  enforce_private_link_service_network_policies  = true
 }
 
-resource "azurerm_subnet_network_security_group_association" "sql" {
-  subnet_id                 = azurerm_subnet.sql.id
-  network_security_group_id = azurerm_network_security_group.network.id
+resource "azurerm_subnet_network_security_group_association" "nsg_join" {
+  for_each                  = var.subnets
+  subnet_id                 = azurerm_subnet.subnets[each.key].id
+  network_security_group_id = data.azurerm_network_security_group.nsg[each.key].id
 }
 
 resource "azurerm_monitor_diagnostic_setting" "virtual_network_diagnostics" {

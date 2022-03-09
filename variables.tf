@@ -1,6 +1,6 @@
 variable "resource_group_name" {
   type        = string
-  description = "Resource Group name of the Virtual Network"
+  description = "Resource Group name to deploy to"
 }
 
 variable "location" {
@@ -18,6 +18,19 @@ variable "virtual_network_address_space" {
   description = "Address space of the Virtual Network to deploy"
 }
 
+variable "subnets" {
+  type = map(object(
+    {
+      name                    = string
+      address_prefixes        = list(string)
+      service_endpoints       = list(string)
+      nsg_name                = string
+      nsg_resource_group_name = string
+    }
+  ))
+  description = "Subnets to deploy"
+}
+
 variable "log_analytics_workspace_name" {
   type        = string
   description = "Name of Log Analytics Workspace to send diagnostics"
@@ -30,5 +43,5 @@ variable "log_analytics_workspace_resource_group_name" {
 
 variable "tags" {
   type        = map(string)
-  description = "Tags of the Virtual Network"
+  description = "Tags to apply"
 }
