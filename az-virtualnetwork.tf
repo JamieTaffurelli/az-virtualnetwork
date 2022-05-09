@@ -5,8 +5,8 @@ data "azurerm_log_analytics_workspace" "logs" {
 
 data "azurerm_network_security_group" "nsg" {
   for_each            = var.subnets
-  name                = each.nsg_name
-  resource_group_name = each.nsg_resource_group_name
+  name                = each.value.nsg_name
+  resource_group_name = each.value.nsg_resource_group_name
 }
 
 resource "azurerm_virtual_network" "network" {
@@ -19,11 +19,11 @@ resource "azurerm_virtual_network" "network" {
 
 resource "azurerm_subnet" "subnets" {
   for_each                                       = var.subnets
-  name                                           = each.name
+  name                                           = each.value.name
   resource_group_name                            = var.resource_group_name
   virtual_network_name                           = azurerm_virtual_network.network.name
-  address_prefixes                               = each.address_prefixes
-  service_endpoints                              = each.service_endpoints
+  address_prefixes                               = each.value.address_prefixes
+  service_endpoints                              = each.value.service_endpoints
   enforce_private_link_endpoint_network_policies = true
   enforce_private_link_service_network_policies  = true
 }
